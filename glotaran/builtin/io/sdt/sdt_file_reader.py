@@ -19,6 +19,7 @@ class SdtIo(Io):
     def read_dataset(
         fmt: str,
         file_name: str,
+        *,
         index: np.ndarray = None,
         flim: bool = False,
         dataset_index: int = None,
