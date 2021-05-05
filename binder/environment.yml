@@ -12,3 +12,5 @@ dependencies:
   - pip:
       - -r ../requirements_dev.txt
       - ..
+      - jupyterlab_widgets
+      - ipywidgets
