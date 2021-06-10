@@ -57,6 +57,39 @@ jobs:
           name: benchmark-results
           path: benchmark/.asv/results
 
+  upload_pr_results:
+    if: github.event_name == 'pull_request'
+    needs: [run_benchmark]
+    name: "Upload PR Results"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download result artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: benchmark-pr-html
+          path: .
+
+      - name: Show tree
+        run: tree .
+
+      - name: Commit PR results
+        env:
+          PR_RESULT_BRANCH: pr-${{github.event.number}}
+        run: |
+          git init
+          git checkout --orphan $PR_RESULT_BRANCH
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.name 'github-actions[bot]'
+          git add .
+          git commit -m "PR benchmark"
+
+      - name: Push result repo
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.BENCHMARK_PUSH_TOKEN }}
+          repository: "s-weigand/pyglotaran-benchmarks"
+          branch: pr-${{github.event.number}}
+
   upload_main_results:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: [run_benchmark]
@@ -69,20 +102,20 @@ jobs:
           persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
           fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
           repository: "s-weigand/pyglotaran-benchmarks"
-          ref: main
 
-      - name: Download result artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: benchmark-results
-          path: results
+      # - name: Download result artifact
+      #   uses: actions/download-artifact@v2
+      #   with:
+      #     name: benchmark-results
+      #     path: results
 
-      - name: Commit results
+      - name: Show PR number
+        env:
+          PR_NR: ${{github.event.number}}
+          BRANCH_PR: pr-${{github.event.number}}
         run: |
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git config user.name 'github-actions[bot]'
-          git add results
-          git commit -m "Update benchmark"
+          echo "pr-$PR_NR"
+          echo "BRANCH_PR"
 
       - name: Push result repo
         uses: ad-m/github-push-action@v0.6.0
@@ -90,3 +123,45 @@ jobs:
           github_token: ${{ secrets.BENCHMARK_PUSH_TOKEN }}
           repository: "s-weigand/pyglotaran-benchmarks"
           branch: main
+          force: true
+
+      # - name: Push result repo
+      #   uses: ad-m/github-push-action@v0.6.0
+      #   with:
+      #     github_token: ${{ secrets.BENCHMARK_PUSH_TOKEN }}
+      #     repository: "s-weigand/pyglotaran-benchmarks"
+      #     branch: main
+
+  # upload_main_results:
+  #   if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+  #   needs: [run_benchmark]
+  #   name: "Upload Main Results"
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout benchmark result repo
+  #       uses: actions/checkout@v2
+  #       with:
+  #         persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
+  #         fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+  #         repository: "s-weigand/pyglotaran-benchmarks"
+  #         ref: main
+
+  #     - name: Download result artifact
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: benchmark-results
+  #         path: results
+
+  #     - name: Commit results
+  #       run: |
+  #         git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+  #         git config user.name 'github-actions[bot]'
+  #         git add results
+  #         git commit -m "Update benchmark"
+
+  #     - name: Push result repo
+  #       uses: ad-m/github-push-action@v0.6.0
+  #       with:
+  #         github_token: ${{ secrets.BENCHMARK_PUSH_TOKEN }}
+  #         repository: "s-weigand/pyglotaran-benchmarks"
+  #         branch: main
