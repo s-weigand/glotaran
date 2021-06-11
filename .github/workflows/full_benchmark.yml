@@ -59,7 +59,7 @@ jobs:
         with:
           persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
           fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
-          repository: "glotaran/pyglotaran-benchmarks"
+          repository: "s-weigand/pyglotaran-benchmarks"
           ref: main
 
       - name: Download result artifact
@@ -79,5 +79,5 @@ jobs:
         uses: ad-m/github-push-action@v0.6.0
         with:
           github_token: ${{ secrets.BENCHMARK_PUSH_TOKEN }}
-          repository: "glotaran/pyglotaran-benchmarks"
+          repository: "s-weigand/pyglotaran-benchmarks"
           branch: main
